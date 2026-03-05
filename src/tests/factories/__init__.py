@@ -1,7 +1,5 @@
-from src.tests.factories.tenant import TenantFactory
-from src.tests.factories.user import UserFactory
+from src.tests.factories.weather import WeatherFactory
 
 FACTORIES = [
-    UserFactory,
-    TenantFactory,
+    WeatherFactory,
 ]

@@ -3,10 +3,8 @@ from http import HTTPStatus
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.tests.factories import TenantFactory
-from src.tests.factories import UserFactory
 
-url = '/datarobot/sql'
+url = '/weather'
 
 
 async def test_sql(

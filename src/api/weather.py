@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get(
-    '/weather',
+    '/',
     summary='Fetch weather for one or more cities',
     description='Returns current weather (`forecast_days=1`) or a 3-day forecast (`forecast_days=3`).',
     # response_model=WeatherResponseSchema,

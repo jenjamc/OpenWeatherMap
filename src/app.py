@@ -11,7 +11,7 @@ from src.settings.conf import Settings
 from src.settings.conf import settings
 from src.settings.db import async_session
 
-PREFIX: str = '/users'
+PREFIX: str = '/weather'
 
 
 def init_routes(fast_api_app: 'FastAPI') -> None:
