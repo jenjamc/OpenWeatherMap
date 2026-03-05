@@ -18,38 +18,18 @@ ModelT = TypeVar('ModelT', bound=Base)
 class BaseService(Generic[ModelT]):
     MODEL: Type[ModelT] = Base
 
-    def __init__(self, session: AsyncSession):
-        self.session = session
+    async def fetch_one(self, session: AsyncSession, filters: Sequence):
+        query = select(self.MODEL).where(*filters)
+        return await session.scalar(query)
 
-    async def fetch_one(self, filters: Sequence, options: Sequence = ()) -> ModelT | None:
-        query = select(self.MODEL).where(*filters).options(*options).limit(1)
-        return await self.session.scalar(query)
-
-    async def fetch_all(self, query: Query | Select) -> Sequence[ModelT]:
-        return (await self.session.scalars(query)).all()
-
-    async def update(self, filters: Sequence, values: dict) -> None:
-        query = update(self.MODEL).where(*filters).values(**values).execution_options(synchronize_session='fetch')
-        await self.session.execute(query)
-        await self.session.commit()
-
-    async def update_obj(self, obj: ModelT, values: dict) -> ModelT:
-        await self.update(filters=(self.MODEL.id == obj.id,), values=values)
-        obj.__dict__.update(values)
-        await self.session.commit()
-        return obj
-
-    async def insert(self, values: dict) -> ModelT:
+    async def insert(self, session: AsyncSession, values: dict) -> ModelT:
         obj = self.MODEL(**values)
-        self.session.add(obj)
-        await self.session.commit()
+        session.add(obj)
+        await session.commit()
         return obj
 
-    async def insert_obj(self, obj: ModelT) -> ModelT:
-        self.session.add(obj)
-        await self.session.commit()
+    @staticmethod
+    async def insert_obj(session: AsyncSession, obj: ModelT) -> ModelT:
+        session.add(obj)
+        await session.commit()
         return obj
-
-    async def exist(self, filters: Sequence) -> bool:
-        query = exists(self.MODEL).where(*filters).select()
-        return bool(await self.session.scalar(query))

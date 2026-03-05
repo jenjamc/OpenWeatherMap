@@ -5,8 +5,10 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import Query
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
+from src.api.dependencies.db import get_db_session
 from src.api.dependencies.services import get_weather_service
 from src.schemas.weather import WeatherErrorSchema, WeatherRequestSchema
 from src.schemas.weather import WeatherResponseSchema

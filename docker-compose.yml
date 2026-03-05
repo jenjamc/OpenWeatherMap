@@ -10,18 +10,10 @@ x-base:
     - .env
   volumes:
     - .:/app
-  depends_on:
-    - mongo
+    - ./data:/data
 
 services:
-  
-  mongo:
-    image: mongo:5.0
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
+
 
   backend:
     <<: *base-backend

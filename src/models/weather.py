@@ -1,3 +1,6 @@
+from sqlalchemy import Column, String
+from sqlalchemy.orm import Mapped
+
 from src.models.base import BaseModel
 
 
@@ -5,4 +8,5 @@ from src.models.base import BaseModel
 class Weather(BaseModel):
     __tablename__ = 'weathers'
 
-    pass
+    city: Mapped[str] = Column(String, nullable=False, index=True)
+    file_path: Mapped[str]

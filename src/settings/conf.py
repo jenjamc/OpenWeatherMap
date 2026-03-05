@@ -27,28 +27,13 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = LogLevel.INFO
     ALLOWED_ORIGINS: str = 'http://localhost'
 
-    DB_DRIVER: str = 'postgresql+asyncpg'
-    DB_USER: str = 'postgres'
-    DB_PASS: str = 'postgres123'
-    DB_HOST: str = 'host.docker.internal'
-    DB_PORT: int = 5432
-    DB_NAME: str = 'src'
+    DB_DRIVER: str = 'sqlite+aiosqlite'
+    DB_DRIVER_SYNC: str = 'sqlite'
+    DB_NAME: str = 'open_weather.db'
 
-    SECRET_KEY: str = 'your-secret-key'
-    ALGORITHM: str = 'HS256'
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
-    RETELL_API_KEY: str = 'YOUR_RETELL_API_KEY'
-    RETELL_WEBHOOK_KEY: str = 'YOUR_RETELL_API_KEY'
-    RETELL_WEBHOOK: str = 'http://localhost:4000/users/webhook'
 
-    DB_MONGO_NAME: str = 'company'
-    DB_MONGO_HOST: str = 'mongo'
-    DB_MONGO_PORT: int = 27017
-    DB_MONGO_USERNAME: str = 'admin'
-    DB_MONGO_PASSWORD: str = 'password'
-
-    OPENWEATHER_API_KEY: str = '129d9ea5e37e0a0662aa602974d1fa07'
+    OPENWEATHER_API_KEY: str = 'api_key'
     OPENWEATHER_BASE_URL: AnyHttpUrl = AnyHttpUrl('https://api.openweathermap.org')
     REQUEST_TIMEOUT_SECONDS: float = 10.0
 
@@ -59,14 +44,14 @@ class Settings(BaseSettings):
     RATE_LIMIT_REQUESTS: int = 60
     RATE_LIMIT_WINDOW_SECONDS: int = 60
     BASE_HTTP_CLIENT_TIMEOUT: int = 5
+    CACHE_TTL_MINUTES: int = 5
 
     @property
-    def sqlalchemy_database_uri(self) -> str:
-        return f'{self.DB_DRIVER}://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'  # noqa
+    def sqlite_database_uri(self) -> str:
+        return f'{self.DB_DRIVER}:///{self.DATA_DIR}/{self.DB_NAME}'  # noqa
 
     @property
-    def db_mongo_uri(self):
-        return f'mongodb://{settings.DB_MONGO_USERNAME}:{settings.DB_MONGO_PASSWORD}@{settings.DB_MONGO_HOST}:{settings.DB_MONGO_PORT}/?retryWrites=false'
-
+    def sqlite_database_uri_sync(self) -> str:
+        return f'{self.DB_DRIVER_SYNC}:///{self.DATA_DIR}/{self.DB_NAME}'  # noqa
 
 settings = Settings()

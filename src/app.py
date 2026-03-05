@@ -1,9 +1,4 @@
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
-
-from beanie import init_beanie
 from fastapi import FastAPI
-from motor.motor_asyncio import AsyncIOMotorClient
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from src import version
@@ -15,7 +10,6 @@ from src.settings.conf import Env
 from src.settings.conf import Settings
 from src.settings.conf import settings
 from src.settings.db import async_session
-from src.settings.db import client
 
 PREFIX: str = '/users'
 
@@ -26,7 +20,7 @@ def init_routes(fast_api_app: 'FastAPI') -> None:
 
 
 def init_db(app_settings: Settings):
-    engine = create_async_engine(app_settings.sqlalchemy_database_uri)
+    engine = create_async_engine(app_settings.sqlite_database_uri)
     async_session.configure(bind=engine)
     metadata.bind = engine  # type: ignore
 
@@ -44,6 +38,6 @@ def create_app(app_settings: Settings = settings) -> FastAPI:
     )
     init_middlewares(fast_api_app, app_settings)
     FastAPIExceptionHandlers(fast_api_app)
-    # init_db(app_settings)
+    init_db(app_settings)
     init_routes(fast_api_app)
     return fast_api_app
