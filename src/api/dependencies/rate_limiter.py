@@ -13,10 +13,11 @@ class RateLimiter:
         self,
         request: Request,
     ) -> None:
-        key = f"{request.scope['path']}/{request.client.host}"
+        client_host = request.client.host if request.client is not None else 'unknown'
+        key = f"{request.scope['path']}/{client_host}"
         rate = await redis.get(key)
         if rate:
-            retry_after = redis.ttl(key)
+            retry_after = await redis.ttl(key)
             raise HTTPException(
                 HTTP_429_TOO_MANY_REQUESTS,
                 detail='Too Many Requests',

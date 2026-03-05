@@ -99,14 +99,14 @@ async def test_get_weather(
     session: AsyncSession,
     httpx_mock: HTTPXMock,
 ) -> None:
-    params = {
-        'cities': ['London', 'Ukraine'],
-        'days_forecast': 2,
-    }
+    cities = ['London', 'Ukraine']
+    days_forecast = 2
+    params: dict[str, int | list[str]] = {'cities': cities, 'days_forecast': days_forecast}
     httpx_mock.add_response(
         method='GET',
         url=open_weather_client.get_url(OpenWeatherHTTPClient.ROUTES.GET_FORECAST_BY_CITY).format(
-            city=params['cities'][0], cnt=params['days_forecast'] * 8
+            city=cities[0],
+            cnt=days_forecast * 8,
         ),
         status_code=HTTPStatus.OK,
         json=london_json,
@@ -114,7 +114,8 @@ async def test_get_weather(
     httpx_mock.add_response(
         method='GET',
         url=open_weather_client.get_url(OpenWeatherHTTPClient.ROUTES.GET_FORECAST_BY_CITY).format(
-            city=params['cities'][1], cnt=params['days_forecast'] * 8
+            city=cities[1],
+            cnt=days_forecast * 8,
         ),
         status_code=HTTPStatus.OK,
         json=ukraine_json,
@@ -123,9 +124,9 @@ async def test_get_weather(
     assert response.status_code == HTTPStatus.OK
     assert len(response.json()) == 2
 
-    london_weather = await session.scalar(select(Weather).filter(Weather.city == params['cities'][0]))
+    london_weather = await session.scalar(select(Weather).filter(Weather.city == cities[0]))
     assert london_weather is not None
-    ukraine_weather = await session.scalar(select(Weather).filter(Weather.city == params['cities'][1]))
+    ukraine_weather = await session.scalar(select(Weather).filter(Weather.city == cities[1]))
     assert ukraine_weather is not None
 
 
@@ -134,37 +135,31 @@ async def test_get_weather_city_not_found(
     session: AsyncSession,
     httpx_mock: HTTPXMock,
 ) -> None:
-    params: dict = {
-        'cities': ['London'],
-        'days_forecast': 2,
-    }
+    cities = ['London']
+    days_forecast = 2
+    params: dict[str, int | list[str]] = {'cities': cities, 'days_forecast': days_forecast}
     httpx_mock.add_response(
         method='GET',
         url=open_weather_client.get_url(OpenWeatherHTTPClient.ROUTES.GET_FORECAST_BY_CITY).format(
-            city=params['cities'][0], cnt=params['days_forecast'] * 8
+            city=cities[0],
+            cnt=days_forecast * 8,
         ),
         status_code=HTTPStatus.NOT_FOUND,
         json={'cod': '404', 'message': 'city not found'},
     )
     response = await client.get(url, params=params)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
-    assert response.json() == {'detail': f"City {params['cities'][0]} does not exists"}
+    assert response.json() == {'detail': f"City {cities[0]} does not exists"}
 
 
 async def test_get_weather_city_wrong_days_forecast_lower_than_1(client: AsyncClient) -> None:
-    params: dict = {
-        'cities': ['London'],
-        'days_forecast': 0,
-    }
+    params: dict[str, int | list[str]] = {'cities': ['London'], 'days_forecast': 0}
     response = await client.get(url, params=params)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 async def test_get_weather_city_wrong_days_forecast_bigger_than_5(client: AsyncClient) -> None:
-    params: dict = {
-        'cities': ['London'],
-        'days_forecast': 6,
-    }
+    params: dict[str, int | list[str]] = {'cities': ['London'], 'days_forecast': 6}
     response = await client.get(url, params=params)
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
@@ -172,19 +167,17 @@ async def test_get_weather_city_wrong_days_forecast_bigger_than_5(client: AsyncC
 async def test_get_weather_cache_hit(
     client: AsyncClient,
     session: AsyncSession,
-):
-    params: dict = {
-        'cities': ['London'],
-        'days_forecast': 1,
-    }
-    cache_file = f"{settings.DATA_DIR}/{params['cities'][0]}_cache_test.json"
+) -> None:
+    cities = ['London']
+    params: dict[str, int | list[str]] = {'cities': cities, 'days_forecast': 1}
+    cache_file = f"{settings.DATA_DIR}/{cities[0]}_cache_test.json"
     os.makedirs(settings.DATA_DIR, exist_ok=True)
     with open(cache_file, 'w') as f:
         ujson.dump(london_json, f)
 
     await session.execute(
         insert(Weather).values(
-            city=params['cities'][0],
+            city=cities[0],
             file_path=cache_file,
         )
     )
@@ -203,14 +196,13 @@ async def test_get_weather_rate_limiter(
     session: AsyncSession,
     httpx_mock: HTTPXMock,
 ) -> None:
-    params: dict = {
-        'cities': ['London', 'Ukraine'],
-        'days_forecast': 2,
-    }
+    cities = ['London', 'Ukraine']
+    days_forecast = 2
+    params: dict[str, int | list[str]] = {'cities': cities, 'days_forecast': days_forecast}
     httpx_mock.add_response(
         method='GET',
         url=open_weather_client.get_url(OpenWeatherHTTPClient.ROUTES.GET_FORECAST_BY_CITY).format(
-            city=params['cities'][0], cnt=params['days_forecast'] * 8
+            city=cities[0], cnt=days_forecast * 8
         ),
         status_code=HTTPStatus.OK,
         json=london_json,
@@ -218,7 +210,7 @@ async def test_get_weather_rate_limiter(
     httpx_mock.add_response(
         method='GET',
         url=open_weather_client.get_url(OpenWeatherHTTPClient.ROUTES.GET_FORECAST_BY_CITY).format(
-            city=params['cities'][1], cnt=params['days_forecast'] * 8
+            city=cities[1], cnt=days_forecast * 8
         ),
         status_code=HTTPStatus.OK,
         json=ukraine_json,

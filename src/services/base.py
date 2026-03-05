@@ -12,7 +12,7 @@ ModelT = TypeVar('ModelT', bound=Base)
 
 
 class BaseService(Generic[ModelT]):
-    MODEL: Type[ModelT] = Base
+    MODEL: Type[ModelT]
 
     async def fetch_one(self, session: AsyncSession, filters: Sequence):
         query = select(self.MODEL).where(*filters)
