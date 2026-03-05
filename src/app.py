@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from src import version
-from src.api import base, weather
+from src.api import base
+from src.api import weather
 from src.exception_handlers import FastAPIExceptionHandlers
 from src.middlewares import init_middlewares
 from src.models import metadata

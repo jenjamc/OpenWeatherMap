@@ -1,46 +1,44 @@
 import asyncio
 import os
-from datetime import UTC, timedelta
 from datetime import datetime
-from pathlib import Path
+from datetime import timedelta
 
 import ujson
-from sqlalchemy import select, desc
+from pydantic import TypeAdapter
+from sqlalchemy import desc
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src import settings
 from src.clients import open_weather_client
-from src.clients.open_weather import OpenWeatherClient
 from src.models.weather import Weather
-from src.schemas.weather import WeatherResultSchema, WeatherRequestSchema, WeatherRequestForecastSchema
+from src.schemas.weather import WeatherBatchResponseSchema
+from src.schemas.weather import WeatherRequestSchema
 from src.services.base import BaseService
 from src.settings.db import async_session
 
 SEMAPHORE = asyncio.Semaphore(5)
 
+
 class WeatherService(BaseService[Weather]):
     MODEL = Weather
 
-    async def get_weather(self, params: WeatherRequestSchema):
-        tasks = [
-            self._get_city_weather(city, params.days_forecast)
-            for city in params.cities
-        ]
+    async def get_weather(self, params: WeatherRequestSchema) -> list[WeatherBatchResponseSchema]:
+        tasks = [self._get_city_weather(city, params.hours_forecast) for city in params.cities]
 
         results = await asyncio.gather(*tasks)
-        return results
+        return TypeAdapter(list[WeatherBatchResponseSchema]).validate_python(results)
 
-    async def _get_city_weather(self, city: str, days_forecast: int):
+    async def _get_city_weather(self, city: str, hours_forecast: int):
         async with SEMAPHORE:
-            async with async_session() as session:
-
+            async with async_session() as session:  # type: ignore
                 last_event = await self._get_last_weather(city, session)
                 if last_event is not None and self._is_cache_valid(last_event):
                     cached = await self._read_cache(last_event)
                     if cached:
                         return cached
 
-                result = await self._fetch_weather_api(city, days_forecast)
+                result = await self._fetch_weather_api(city, hours_forecast)
 
                 await self._store_result(city, result, session)
 
@@ -48,9 +46,7 @@ class WeatherService(BaseService[Weather]):
 
     @staticmethod
     def _is_cache_valid(event: Weather):
-        return datetime.now() - event.created_at < timedelta(
-            minutes=settings.CACHE_TTL_MINUTES
-        )
+        return datetime.now() - event.created_at < timedelta(minutes=settings.CACHE_TTL_MINUTES)
 
     @staticmethod
     async def _read_cache(event: Weather):
@@ -61,16 +57,8 @@ class WeatherService(BaseService[Weather]):
             return ujson.load(f)
 
     @staticmethod
-    async def _fetch_weather_api(city: str, days_forecast: int):
-        request = WeatherRequestForecastSchema(
-            city=city,
-            days_forecast=days_forecast,
-        )
-
-        return await open_weather_client.get_forecast_by_coordinates(
-            request
-        )
-
+    async def _fetch_weather_api(city: str, hours_forecast: int):
+        return await open_weather_client.get_forecast_by_coordinates(city, hours_forecast)
 
     async def _store_result(self, city: str, result: dict, session: AsyncSession):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -89,12 +77,7 @@ class WeatherService(BaseService[Weather]):
         await self.insert_obj(session, event)
 
     async def _get_last_weather(self, city: str, session: AsyncSession):
-        stmt = (
-            select(self.MODEL)
-            .where(self.MODEL.city == city)
-            .order_by(desc(self.MODEL.created_at))
-            .limit(1)
-        )
+        query = select(self.MODEL).where(self.MODEL.city == city).order_by(desc(self.MODEL.created_at)).limit(1)
 
-        result = await session.execute(stmt)
+        result = await session.execute(query)
         return result.scalar_one_or_none()

@@ -1,0 +1,64 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+        args: [ --markdown-linebreak-ext=md ]
+        files: ^src/.*\.py$
+      - id: end-of-file-fixer
+        exclude: static|README.md|release_notes
+        files: ^src/.*\.py$
+      - id: check-docstring-first
+        files: ^src/.*\.py$
+      - id: debug-statements
+        files: ^src/.*\.py$
+      - id: double-quote-string-fixer
+        files: ^src/.*\.py$
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        args: [ --line-length=120, -S ]
+        files: ^src/.*\.py$
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-typing-imports
+          - flake8-comprehensions
+          - flake8-eradicate
+          - flake8-spellcheck
+          - dlint
+          - darglint
+          - mccabe
+          - pep8-naming
+          - flake8-isort
+        args:
+          - "--max-line-length=120"
+          - "--classmethod-decorators=classmethod"
+          - "--whitelist=whitelist.txt"
+          - "--config=.flake8"
+        files: ^src/.*\.py$
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.1
+    hooks:
+      - id: ruff
+        types_or: [ python, pyi, jupyter ]
+        args: [ --fix ]
+      - id: ruff-format
+        types_or: [ python, pyi, jupyter ]
+  - repo: local
+    hooks:
+      - id: mypy
+        name: Mypy check
+        entry: sh -c 'mypy --config-file=.mypy.ini src || exit 1'
+        language: system
+        pass_filenames: false
+        files: ^src/.*\.py$
+      - id: bandit-security-check
+        name: Bandit security check
+        entry: bandit
+        args: [ -q, -x, test ]
+        language: system
+        files: src/

@@ -31,8 +31,6 @@ class Settings(BaseSettings):
     DB_DRIVER_SYNC: str = 'sqlite'
     DB_NAME: str = 'open_weather.db'
 
-
-
     OPENWEATHER_API_KEY: str = 'api_key'
     OPENWEATHER_BASE_URL: AnyHttpUrl = AnyHttpUrl('https://api.openweathermap.org')
     REQUEST_TIMEOUT_SECONDS: float = 10.0
@@ -41,10 +39,12 @@ class Settings(BaseSettings):
     DATA_DIR: str = 'data'
     LOG_DB_PATH: str = 'data/weather_events.db'
 
-    RATE_LIMIT_REQUESTS: int = 60
+    RATE_LIMIT_REQUESTS: int = 5
     RATE_LIMIT_WINDOW_SECONDS: int = 60
     BASE_HTTP_CLIENT_TIMEOUT: int = 5
     CACHE_TTL_MINUTES: int = 5
+
+    REDIS_URL: str = 'redis://redis:6379'
 
     @property
     def sqlite_database_uri(self) -> str:
@@ -53,5 +53,6 @@ class Settings(BaseSettings):
     @property
     def sqlite_database_uri_sync(self) -> str:
         return f'{self.DB_DRIVER_SYNC}:///{self.DATA_DIR}/{self.DB_NAME}'  # noqa
+
 
 settings = Settings()

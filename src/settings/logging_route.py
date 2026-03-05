@@ -1,6 +1,4 @@
 import logging
-import uuid
-from contextvars import ContextVar
 from json import JSONDecodeError
 from typing import Callable
 

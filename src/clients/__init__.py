@@ -1,4 +1,4 @@
-from src.clients.open_weather import OpenWeatherClient
+from src.clients.open_weather import OpenWeatherHTTPClient
 from src.settings.conf import settings
 
-open_weather_client = OpenWeatherClient(settings.OPENWEATHER_BASE_URL)
+open_weather_client = OpenWeatherHTTPClient(settings.OPENWEATHER_BASE_URL)

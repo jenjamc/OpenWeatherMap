@@ -3,12 +3,8 @@ from typing import Sequence
 from typing import Type
 from typing import TypeVar
 
-from sqlalchemy import Select
-from sqlalchemy import exists
 from sqlalchemy import select
-from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Query
 
 from src.models.base import Base
 

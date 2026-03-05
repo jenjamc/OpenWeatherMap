@@ -94,3 +94,9 @@ stobox
 N8N
 contextvars
 fromtimestamp
+src
+OPENWEATHER
+cnt
+Coord
+kf
+grnd

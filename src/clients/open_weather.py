@@ -1,27 +1,23 @@
-from collections import defaultdict
-from datetime import UTC
-from datetime import datetime
-
-
 from src.clients.http import BaseHTTPClient
+from src.exceptions import HTTPClientError
 from src.exceptions import ValidationError
-from src.schemas.weather import WeatherRequestSchema, WeatherRequestForecastSchema
 from src.settings.conf import settings
 from src.settings.constants import ErrorMessages
 
 
-class OpenWeatherClient(BaseHTTPClient):
-
+class OpenWeatherHTTPClient(BaseHTTPClient):
     class ROUTES:
         API_KEY = settings.OPENWEATHER_API_KEY
-        GET_FORECAST_BY_COORDINATES: str = 'data/2.5/forecast?q={city}&cnt={cnt}&appid=' + API_KEY
+        GET_FORECAST_BY_CITY: str = 'data/2.5/forecast?q={city}&cnt={cnt}&appid=' + API_KEY
 
-
-    async def get_forecast_by_coordinates(self, params: WeatherRequestForecastSchema):
-        response = await self.get(url=self.ROUTES.GET_FORECAST_BY_COORDINATES.format(
-            city=params.city,
-            cnt=params.days_forecast,
-        ))
-        # return GeoCodesSchema(**response.json()[0])
-        return response.json()
-
+    async def get_forecast_by_coordinates(self, city: str, hours_forecast: int):
+        try:
+            response = await self.get(
+                url=self.ROUTES.GET_FORECAST_BY_CITY.format(
+                    city=city,
+                    cnt=hours_forecast,
+                )
+            )
+            return response.json()
+        except HTTPClientError:
+            raise ValidationError(ErrorMessages.INVALID_CITY.format(city))

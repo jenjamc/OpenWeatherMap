@@ -8,12 +8,22 @@ x-base:
   tty: true
   env_file:
     - .env
+  depends_on:
+    - redis
   volumes:
     - .:/app
     - ./data:/data
 
 services:
 
+
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "6379:6379"
 
   backend:
     <<: *base-backend

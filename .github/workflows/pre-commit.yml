@@ -1,0 +1,20 @@
+name: Pre-commit checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: DSocker build
+        run: docker build -t service .
+
+      - name: Run pre-commit
+        run: docker run service pre-commit run --all-files

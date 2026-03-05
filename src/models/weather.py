@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped
 
 from src.models.base import BaseModel
-
 
 
 class Weather(BaseModel):

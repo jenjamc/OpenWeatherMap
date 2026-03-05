@@ -1,0 +1,6 @@
+[flake8]
+docstring_style = sphinx
+min_python_version = 3.12
+ignore = E501, W503, S413, DUO133, E231, I001
+dictionaries = en_US,python,technical
+exclude = __init__.py, env.py

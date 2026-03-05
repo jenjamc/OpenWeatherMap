@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "src"
 version = "1.1.0"
-description = "User Manager"
+description = "Open Weather Integration + Concurrency"
 authors = []
 license = ""
 
