@@ -1,0 +1,32 @@
+volumes:
+  pg_data:
+    driver: local
+
+x-base:
+  &base-backend
+  stdin_open: true
+  tty: true
+  env_file:
+    - .env
+  volumes:
+    - .:/app
+  depends_on:
+    - mongo
+
+services:
+  
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+
+  backend:
+    <<: *base-backend
+    build:
+      context: .
+    command: gunicorn -k uvicorn.workers.UvicornWorker -c gunicorn-conf.py --timeout 60 server:app
+    ports:
+        - "4000:4000"
