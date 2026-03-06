@@ -84,33 +84,27 @@ The container entrypoint runs migrations automatically (`alembic upgrade head`) 
 1. Install dependencies:
 
 ```bash
-poetry install
+bin/poetry install
 ```
 
-2. Export env vars from `.env` for your shell session:
+2. Build the project:
 
 ```bash
-set -a
-source .env
-set +a
+docker compose build
 ```
 
-3. Ensure Redis is running locally (or via Docker):
-
-```bash
-docker run --name owm-redis -p 6379:6379 -d redis:latest
-```
+3. Create env vars from `.env.example` for your shell session:
 
 4. Run migrations:
 
 ```bash
-poetry run alembic upgrade head
+bin/alembic upgrade head
 ```
 
 5. Start the app:
 
 ```bash
-poetry run python server.py
+docker compose up
 ```
 
 ## Developer Commands
@@ -118,25 +112,13 @@ poetry run python server.py
 Run tests (Docker helper):
 
 ```bash
-./bin/test
-```
-
-Run tests directly:
-
-```bash
-poetry run pytest -v
-```
-
-Run migrations (Docker helper):
-
-```bash
-./bin/alembic upgrade head
+bin/test
 ```
 
 Run pre-commit (Docker helper):
 
 ```bash
-./bin/pre-commit
+bin/pre-commit
 ```
 
 ## Project Structure
