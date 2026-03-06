@@ -32,7 +32,7 @@ class WeatherService(BaseService[Weather]):
     async def _get_city_weather(self, city: str, hours_forecast: int):
         async with SEMAPHORE:
             async with async_session() as session:  # type: ignore
-                last_event = await self._get_last_weather(city, session)
+                last_event = await self._get_last_weather(city, hours_forecast, session)
                 if last_event is not None and self._is_cache_valid(last_event):
                     cached = await self._read_cache(last_event)
                     if cached:
@@ -40,7 +40,7 @@ class WeatherService(BaseService[Weather]):
 
                 result = await self._fetch_weather_api(city, hours_forecast)
 
-                await self._store_result(city, result, session)
+                await self._store_result(city, hours_forecast, result, session)
 
                 return result
 
@@ -60,10 +60,10 @@ class WeatherService(BaseService[Weather]):
     async def _fetch_weather_api(city: str, hours_forecast: int):
         return await open_weather_client.get_forecast_by_coordinates(city, hours_forecast)
 
-    async def _store_result(self, city: str, result: dict, session: AsyncSession):
+    async def _store_result(self, city: str, hours_forecast: int, result: dict, session: AsyncSession):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-        filename = f'{city}_{timestamp}.json'
+        filename = f'{city}_{hours_forecast}_{timestamp}.json'
         file_path = f'{settings.DATA_DIR}/{filename}'
 
         with open(file_path, 'w') as f:
@@ -72,12 +72,21 @@ class WeatherService(BaseService[Weather]):
         event = Weather(
             city=city,
             file_path=file_path,
+            hours_forecast=hours_forecast,
         )
 
         await self.insert_obj(session, event)
 
-    async def _get_last_weather(self, city: str, session: AsyncSession):
-        query = select(self.MODEL).where(self.MODEL.city == city).order_by(desc(self.MODEL.created_at)).limit(1)
+    async def _get_last_weather(self, city: str, hours_forecast: int, session: AsyncSession):
+        query = (
+            select(self.MODEL)
+            .where(
+                self.MODEL.city == city,
+                self.MODEL.hours_forecast == hours_forecast,
+            )
+            .order_by(desc(self.MODEL.created_at))
+            .limit(1)
+        )
 
         result = await session.execute(query)
         return result.scalar_one_or_none()

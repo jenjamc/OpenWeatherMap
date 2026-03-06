@@ -179,6 +179,7 @@ async def test_get_weather_cache_hit(
         insert(Weather).values(
             city=cities[0],
             file_path=cache_file,
+            hours_forecast=params['days_forecast'],
         )
     )
     await session.commit()
