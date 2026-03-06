@@ -11,3 +11,4 @@ class WeatherFactory(BaseFactory):
 
     city = factory.Faker('pystr')
     file_path = factory.Faker('pystr')
+    hours_forecast = factory.Faker('pyint')
