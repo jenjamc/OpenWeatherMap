@@ -179,7 +179,7 @@ async def test_get_weather_cache_hit(
         insert(Weather).values(
             city=cities[0],
             file_path=cache_file,
-            hours_forecast=params['days_forecast'],
+            hours_forecast=params['days_forecast'] * 8,
         )
     )
     await session.commit()
@@ -187,6 +187,7 @@ async def test_get_weather_cache_hit(
     response = await client.get(url, params=params)
 
     assert response.status_code == HTTPStatus.OK
+    assert response.json() == 'test'
 
     if os.path.exists(cache_file):
         os.remove(cache_file)
