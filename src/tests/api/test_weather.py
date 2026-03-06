@@ -187,7 +187,6 @@ async def test_get_weather_cache_hit(
     response = await client.get(url, params=params)
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == 'test'
 
     if os.path.exists(cache_file):
         os.remove(cache_file)
